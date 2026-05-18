@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
                              QLineEdit, QVBoxLayout, QHBoxLayout, QMessageBox)
 from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QPalette, QBrush, QPixmap
+from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QTransform
 
 class RouletteApp(QWidget):
     def __init__(self):
@@ -13,13 +15,21 @@ class RouletteApp(QWidget):
         self.initUI()
 
     def initUI(self):
+        # Вид окна
         self.setWindowTitle('Казино: Рулетка')
-        self.setGeometry(100, 100, 900, 750)
+        self.setGeometry(100, 100, 850, 750)
         palette = QPalette()
         background_path = "golden_background.png"
         brush = QBrush(QPixmap(background_path).scaled(self.size()))
         palette.setBrush(QPalette.Window, brush)
         self.setPalette(palette)
+        # Рулетка
+        self.wheel_label = QLabel(self)
+        self.wheel_pixmap = QPixmap("ruletka1.png") # ВАЖНО: имя вашего файла
+        self.wheel_label.setPixmap(self.wheel_pixmap)
+        self.wheel_label.setGeometry(550, 10, 280, 280) # X, Y, Ширина, Высота
+        self.wheel_angle = 0
+
 
         # Заголовок
         self.title = QLabel('Добро пожаловать в казино!', self)
@@ -117,8 +127,8 @@ class RouletteApp(QWidget):
         self.red_btn.clicked.connect(lambda: self.set_choice('red'))
         self.black_btn.clicked.connect(lambda: self.set_choice('black'))
 
+    # Тип ставки
     def set_choice(self, choice):
-        """Устанавливает тип ставки"""
         self.choice = choice
         choice_names = {
         'even': 'Чётное',
@@ -127,6 +137,16 @@ class RouletteApp(QWidget):
         'black': 'Чёрное'
         }
         self.type_bet_label.setText(f"Тип ставки: {choice_names.get(choice, '-')}")
+
+    # Раскручивание рулетки
+    def rotate_frame(self):
+        if hasattr(self, 'wheel_label'): # Проверка на случай, если картинка не загрузилась
+            self.wheel_angle += 8 # Угол поворота за кадр (чем больше, тем быстрее)
+            self.wheel_label.setPixmap(
+                self.wheel_pixmap.transformed(
+                    QTransform().rotate(self.wheel_angle)
+                )
+            )
 
 
     def spin(self):
@@ -146,16 +166,24 @@ class RouletteApp(QWidget):
         self.red_btn.setEnabled(False)
         self.black_btn.setEnabled(False)
 
+        # Запускаем таймер вращения (каждые 30 мс)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.rotate_frame)
+        self.timer.start(30)
+
 
         # --- АНИМАЦИЯ (Быстрая смена чисел) ---
         # Генерируем 2000 случайных чисел для "прокрутки"
-        for _ in range(2000):
+        for _ in range(8000):
             fake_num = random.randint(0, 36)
             self.result_label.setText(f'Выпало: {fake_num}')
             # Эта строчка заставляет окно перерисоваться мгновенно
             QApplication.processEvents() 
 
         result = random.randint(0, 36)
+
+        # Через 2.5 секунды остановить таймер и показать результат
+        QTimer.singleShot(100, lambda: self.stop_spin(result))
 
         if result in self.red_numbers:
             color = 'firebrick'
@@ -207,6 +235,10 @@ class RouletteApp(QWidget):
         else:
             self.balance -= bet
             QMessageBox.warning(self, 'Проигрыш', 'К сожалению, вы проиграли.')
+
+    # Остановка анимации
+    def stop_spin(self, result):
+        self.timer.stop()
 
         # Обновление баланса, поля ввода и кнопок на экране
         self.balance_label.setText(f'Ваш баланс: {self.balance} ₽')
