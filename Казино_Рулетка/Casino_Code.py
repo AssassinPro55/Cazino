@@ -138,6 +138,7 @@ class RouletteApp(QWidget):
         }
         self.type_bet_label.setText(f"Тип ставки: {choice_names.get(choice, '-')}")
 
+
     # Раскручивание рулетки
     def rotate_frame(self):
         if hasattr(self, 'wheel_label'): # Проверка на случай, если картинка не загрузилась
@@ -148,8 +149,10 @@ class RouletteApp(QWidget):
                 )
             )
 
-
     def spin(self):
+        if not hasattr(self, 'choice') or self.choice is None:
+            QMessageBox.warning(self, 'Ошибка', 'Пожалуйста, выберите тип ставки!')
+            return
         try:
             bet = int(self.bet_input.text())
             if bet <= 0 or bet > self.balance:
@@ -203,13 +206,8 @@ class RouletteApp(QWidget):
         self.result_label.setText(f'Выпало: {formatted_result}')
 
         win = False
-        
-        if not self.choice:
-            QMessageBox.warning(self, 'Ошибка', 'Пожалуйста, выберите тип ставки!')
-            win = False
-            return
 
-        elif self.choice == 'even' and result % 2 == 0 and result != 0:
+        if self.choice == 'even' and result % 2 == 0 and result != 0:
             win = True
             prize = bet
             msg = f'Поздравляем! Вы выиграли {prize} ₽'
