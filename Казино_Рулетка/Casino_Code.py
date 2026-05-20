@@ -203,7 +203,13 @@ class RouletteApp(QWidget):
         self.result_label.setText(f'Выпало: {formatted_result}')
 
         win = False
-        if self.choice == 'even' and result % 2 == 0 and result != 0:
+        
+        if not self.choice:
+            QMessageBox.warning(self, 'Ошибка', 'Пожалуйста, выберите тип ставки!')
+            win = False
+            return
+
+        elif self.choice == 'even' and result % 2 == 0 and result != 0:
             win = True
             prize = bet
             msg = f'Поздравляем! Вы выиграли {prize} ₽'
@@ -230,6 +236,7 @@ class RouletteApp(QWidget):
             QMessageBox.information(self, 'Победа!', f'Поздравляем! Выиграл чёрный цвет. Ваш приз: {prize} ₽')
 
         elif result == 0:
+            self.balance -= bet
             QMessageBox.warning(self, 'Проигрыш', 'К сожалению, вы проиграли. Выпало безвыигрышное число - 0.')
 
         else:
@@ -240,6 +247,7 @@ class RouletteApp(QWidget):
     def stop_spin(self, result):
         self.timer.stop()
 
+
         # Обновление баланса, поля ввода и кнопок на экране
         self.balance_label.setText(f'Ваш баланс: {self.balance} ₽')
         self.spin_btn.setEnabled(True)
@@ -249,6 +257,49 @@ class RouletteApp(QWidget):
         self.red_btn.setEnabled(True)
         self.black_btn.setEnabled(True)
         self.bet_input.clear()
+        self.restart_game()
+
+    
+    
+    # Проверка баланса
+    def restart_game(self):
+        if self.balance <= 0:
+
+            # Блокируем кнопки
+            self.spin_btn.setEnabled(False)
+            self.bet_input.setEnabled(False)
+            self.even_btn.setEnabled(False)
+            self.odd_btn.setEnabled(False)
+            self.red_btn.setEnabled(False)
+            self.black_btn.setEnabled(False)
+
+            # Диалоговое окно
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle('Игра окончена')
+            msg_box.setText('Ваш баланс равен 0.')
+            msg_box.setInformativeText('Хотите начать заново или завершить игру?')
+
+            # Кнопки
+            restart_btn = msg_box.addButton('Начать заново', QMessageBox.AcceptRole)
+            quit_btn = msg_box.addButton('Завершить', QMessageBox.RejectRole)
+
+            msg_box.exec_()
+
+            button_role = msg_box.clickedButton().text()
+
+            if button_role == 'Начать заново':
+                self.balance = 1000  # Сброс баланса
+                self.balance_label.setText(f'Ваш баланс: {self.balance} ₽')
+                # Разблокируем кнопки
+                self.spin_btn.setEnabled(True)
+                self.bet_input.setEnabled(True)
+                self.even_btn.setEnabled(True)
+                self.odd_btn.setEnabled(True)
+                self.red_btn.setEnabled(True)
+                self.black_btn.setEnabled(True)
+
+            elif button_role == 'Завершить':
+                QApplication.quit()  # Закрываем приложение
 
 
 if __name__ == '__main__':
