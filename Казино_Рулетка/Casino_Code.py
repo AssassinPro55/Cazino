@@ -1,3 +1,4 @@
+import pygame
 from pygame import mixer
 import sys
 import random
@@ -17,7 +18,7 @@ class RouletteApp(QWidget):
     def initUI(self):
         # Вид окна
         self.setWindowTitle('Казино: Рулетка')
-        self.setGeometry(100, 100, 850, 750)
+        self.setGeometry(100, 100, 1400, 950)
         palette = QPalette()
         background_path = "golden_background.png"
         brush = QBrush(QPixmap(background_path).scaled(self.size()))
@@ -27,7 +28,7 @@ class RouletteApp(QWidget):
         self.wheel_label = QLabel(self)
         self.wheel_pixmap = QPixmap("ruletka1.png") # ВАЖНО: имя вашего файла
         self.wheel_label.setPixmap(self.wheel_pixmap)
-        self.wheel_label.setGeometry(550, 10, 280, 280) # X, Y, Ширина, Высота
+        self.wheel_label.setGeometry(1000, 20, 280, 280) # X, Y, Ширина, Высота
         self.wheel_angle = 0
 
 
@@ -176,8 +177,8 @@ class RouletteApp(QWidget):
 
 
         # --- АНИМАЦИЯ (Быстрая смена чисел) ---
-        # Генерируем 2000 случайных чисел для "прокрутки"
-        for _ in range(8000):
+        # Генерируем 4000 случайных чисел для "прокрутки"
+        for _ in range(4000):
             fake_num = random.randint(0, 36)
             self.result_label.setText(f'Выпало: {fake_num}')
             # Эта строчка заставляет окно перерисоваться мгновенно
@@ -188,6 +189,13 @@ class RouletteApp(QWidget):
         # Через 2.5 секунды остановить таймер и показать результат
         QTimer.singleShot(100, lambda: self.stop_spin(result))
 
+        # Звуки при событиях
+        sound_win = pygame.mixer.Sound("sound_win.ogg")
+        sound_lose = pygame.mixer.Sound("sound_lose.ogg")
+        sound_win.set_volume(0.4)
+        sound_lose.set_volume(0.4)
+
+        # Окраска результата
         if result in self.red_numbers:
             color = 'firebrick'
             formatted_result = f"<font color='{color}'>{result}</font>"
@@ -205,11 +213,13 @@ class RouletteApp(QWidget):
 
         self.result_label.setText(f'Выпало: {formatted_result}')
 
+        # Выигрыш и проигрыш
         win = False
 
         if self.choice == 'even' and result % 2 == 0 and result != 0:
             win = True
             prize = bet
+            sound_win.play()
             msg = f'Поздравляем! Вы выиграли {prize} ₽'
             self.balance += prize
             QMessageBox.information(self, 'Победа!', msg)
@@ -217,6 +227,7 @@ class RouletteApp(QWidget):
         elif self.choice == 'odd' and result % 2 != 0 and result != 0:
             win = True
             prize = bet
+            sound_win.play()
             msg = f'Поздравляем! Вы выиграли {prize} ₽'
             self.balance += prize
             QMessageBox.information(self, 'Победа!', msg)
@@ -224,21 +235,25 @@ class RouletteApp(QWidget):
         elif self.choice == 'red' and result in self.red_numbers:
             win = True
             prize = bet
+            sound_win.play()
             self.balance += prize
             QMessageBox.information(self, 'Победа!', f'Поздравляем! Выиграл красный цвет. Ваш приз: {prize} ₽')
 
         elif self.choice == 'black' and result in self.black_numbers:
             win = True
             prize = bet
+            sound_win.play()
             self.balance += prize
             QMessageBox.information(self, 'Победа!', f'Поздравляем! Выиграл чёрный цвет. Ваш приз: {prize} ₽')
 
         elif result == 0:
             self.balance -= bet
+            sound_lose.play()
             QMessageBox.warning(self, 'Проигрыш', 'К сожалению, вы проиграли. Выпало безвыигрышное число - 0.')
 
         else:
             self.balance -= bet
+            sound_lose.play()
             QMessageBox.warning(self, 'Проигрыш', 'К сожалению, вы проиграли.')
 
     # Остановка анимации
