@@ -5,9 +5,9 @@ import random
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
                              QLineEdit, QVBoxLayout, QHBoxLayout, QMessageBox)
 from PyQt5.QtGui import QFont
-from PyQt5.QtGui import QPalette, QBrush, QPixmap
+from PyQt5.QtGui import QPalette, QBrush
 from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QTransform
+from PyQt5.QtGui import QTransform, QPixmap
 
 class RouletteApp(QWidget):
     def __init__(self):
@@ -28,7 +28,7 @@ class RouletteApp(QWidget):
         self.wheel_label = QLabel(self)
         self.wheel_pixmap = QPixmap("ruletka2.png") # ВАЖНО: имя вашего файла
         self.wheel_label.setPixmap(self.wheel_pixmap)
-        self.wheel_pixmap.setGeometry(1000, 20, 920, 280) # X, Y, Ширина, Высота
+        self.wheel_label.setGeometry(1000, 20, 920, 280) # X, Y, Ширина, Высота
         self.wheel_angle = 0
 
 
