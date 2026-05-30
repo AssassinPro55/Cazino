@@ -26,9 +26,9 @@ class RouletteApp(QWidget):
         self.setPalette(palette)
         # Рулетка
         self.wheel_label = QLabel(self)
-        self.wheel_pixmap = QPixmap("ruletka1.png") # ВАЖНО: имя вашего файла
+        self.wheel_pixmap = QPixmap("ruletka2.png") # ВАЖНО: имя вашего файла
         self.wheel_label.setPixmap(self.wheel_pixmap)
-        self.wheel_label.setGeometry(1000, 20, 280, 280) # X, Y, Ширина, Высота
+        self.wheel_pixmap.setGeometry(1000, 20, 920, 280) # X, Y, Ширина, Высота
         self.wheel_angle = 0
 
 
